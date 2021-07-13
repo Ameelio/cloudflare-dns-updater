@@ -1,0 +1,49 @@
+---
+#apiVersion: batch/v1  # use this once on on k8s 1.21
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: cloudflare-updater
+  namespace: cloudflare-updater-ns
+  labels:
+    app: cloudflare-updater
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    metadata:
+      namespace: cloudflare-updater-ns
+      labels:
+        app: cloudflare-updater
+    spec:
+      template:
+        metadata:
+          namespace: cloudflare-updater-ns
+          labels:
+            app: cloudflare-updater
+        spec:
+          serviceAccountName: cloudflare-updater-sa
+          imagePullSecrets:
+            - name: ameelio-registry
+          containers:
+          - name: cloudflare-updater
+            image: registry.digitalocean.com/ameelio-registry/cloudflare-updater-prod:latest
+            imagePullPolicy: Always
+            envFrom:
+              - configMapRef:
+                  name: cloudflare-updater-config
+              - secretRef:
+                  name: cloudflare-updater-secrets
+          restartPolicy: Never
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflare-updater-config
+  namespace: cloudflare-updater-ns
+  labels:
+    app: cloudflare-updater
+data:
+  HOSTNAME: 'cvh-staging'
+  DOMAIN: 'ameelio.org'
+  ZONE_ID: 'c82786df7abd35eb6773c67960fba8d3'

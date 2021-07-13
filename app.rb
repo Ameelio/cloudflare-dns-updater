@@ -1,0 +1,157 @@
+#!/usr/bin/env ruby
+
+# PUT zones/:zone_identifier/dns_records/:identifier
+
+require 'http'
+require 'json'
+
+def debug? = ENV['DEBUG_OUTPUT'] =~ /[Yy]/
+
+def debug(msg)
+  if debug?
+    puts "[DEBUG]: #{msg}"
+  end
+end
+
+def info(msg)
+  puts "[INFO]: #{msg}"
+end
+
+def get_nodes
+  ctx = OpenSSL::SSL::SSLContext.new
+  ctx.verify_mode = OpenSSL::SSL::VERIFY_NONE
+
+  resp = HTTP
+    .auth("Bearer #{k8s_token}")
+    .headers(accept: 'application/json')
+    .headers('content-type': 'application/json')
+    .get("https://kubernetes.default.svc/api/v1/nodes", ssl_context: ctx)
+    .body
+
+  JSON.parse(resp)
+end
+
+def get_node_ips
+  get_nodes()["items"].map do |item|
+    item['status']['addresses'].select { |a| a['type'] == 'ExternalIP' }.map { |a| a['address'] }
+  end.flatten
+end
+
+def get_a_records
+  resp = HTTP
+    .auth("Bearer #{cf_token}")
+    .headers(accept: 'application/json')
+    .headers('content-type': 'application/json')
+    .get("https://api.cloudflare.com/client/v4/zones/#{zone_id}/dns_records?name=#{full_hostname}&type=A")
+    .body
+
+  JSON.parse(resp)
+end
+
+def relevant_a_records
+  get_a_records['result']
+    .select { |a_record| a_record['name'] =~ /^#{hostname}/i }
+    .map { |a_record| a_record['content'] }
+end
+
+def create_a_record(ip:)
+  # POST zones/:zone_identifier/dns_records
+  info "Creating A record for IP #{ip}"
+
+  result = HTTP
+    .auth("Bearer #{cf_token}")
+    .headers(accept: 'application/json')
+    .headers('content-type': 'application/json')
+    .post("https://api.cloudflare.com/client/v4/zones/#{zone_id}/dns_records", json: {
+      type: "A",
+      name: hostname,
+      content: ip,
+      ttl: '1',
+      proxied: false
+    })
+    .body
+
+  info("Creation result:  #{result}")
+end
+
+def remove_a_record(ip:)
+  info "Removing A record for IP #{ip}"
+
+  debug "Retrieving ID for A record for IP #{ip}"
+
+  # First get the record's ID
+  # TODO:  Limit search to cvh-staging.ameelio.org
+  resp = HTTP
+    .auth("Bearer #{cf_token}")
+    .headers(accept: 'application/json')
+    .headers('content-type': 'application/json')
+    .get("https://api.cloudflare.com/client/v4/zones/#{zone_id}/dns_records?type=A&match=all&content=#{ip}&name=#{full_hostname}")
+    .body
+
+  debug "Parsing ID for A record for IP #{ip}"
+
+  record = JSON.parse(resp)['result']
+    .select { |a_record| a_record['content'] == ip }
+    .first
+  id = record['id']
+
+  debug "Parsed ID for A record for IP #{ip}.  ID is '#{id}'"
+
+  # DELETE zones/:zone_identifier/dns_records/:identifier
+  result = HTTP
+    .auth("Bearer #{cf_token}")
+    .headers(accept: 'application/json')
+    .headers('content-type': 'application/json')
+    .delete("https://api.cloudflare.com/client/v4/zones/#{zone_id}/dns_records/#{id}")
+    .body
+
+  info("Removal result:  #{result}")
+end
+
+def read_k8s_token = File.read('/var/run/secrets/kubernetes.io/serviceaccount/token')
+
+def k8s_token
+  $k8s_token ||= read_k8s_token
+  $k8s_token
+end
+
+def cf_token = ENV['CF_TOKEN']
+def hostname = ENV['HOSTNAME']
+def domain = ENV['DOMAIN']
+def full_hostname = "#{hostname}.#{domain}"
+def zone_id = ENV['ZONE_ID']
+
+def cf_auth_email = ENV['CF_AUTH_EMAIL']
+def cf_auth_key = ENV['CF_AUTH_KEY']
+
+def main(args)
+  info("Starting Cloudflare updater cycle")
+
+  # Get the IP addresses for all the nodes in our cluster
+  node_ips = get_node_ips
+  info("Successfully Retrieved node_ips: #{node_ips}")
+
+  # Get all A records from Cloudflare
+  cf_a_records = relevant_a_records
+  info("Successfully Retrieved relevant A records from Cloudflare: #{cf_a_records}")
+
+  node_ips.each do |node_ip|
+    # If there's not an A record for this IP already, add it
+    create_a_record(ip: node_ip) unless cf_a_records.include?(node_ip)
+  end
+
+  cf_a_records.each do |a_record|
+    # If there's not a node corresponding to this IP, remove it
+    remove_a_record(ip: a_record) unless node_ips.include?(a_record)
+  end
+
+  #debug "Inserting temp thing"
+  #create_a_record(ip: "192.0.2.1")
+
+  #debug "Removing temp thing"
+  #remove_a_record(ip: "192.0.2.1")
+
+  info("Finished Cloudflare updater cycle")
+end
+
+main ARGV
