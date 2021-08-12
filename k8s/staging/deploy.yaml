@@ -26,7 +26,7 @@ spec:
             - name: ameelio-registry
           containers:
           - name: cloudflare-updater
-            image: registry.digitalocean.com/ameelio-registry/cloudflare-updater-prod:latest
+            image: registry.digitalocean.com/ameelio-registry/cloudflare-updater-staging:latest
             imagePullPolicy: Always
             envFrom:
               - configMapRef:
