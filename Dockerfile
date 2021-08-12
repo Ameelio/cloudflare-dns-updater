@@ -1,12 +1,12 @@
 FROM docker.io/ruby:3.0
 
-COPY Gemfile Gemfile.lock /app
+COPY Gemfile Gemfile.lock /app/
 
 WORKDIR /app
 USER root
 RUN bundle install
 
-COPY . /app
+COPY . /app/
 
 #USER default
 EXPOSE 4567
