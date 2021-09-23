@@ -1,0 +1,58 @@
+name: Build, Test, and Deploy
+on:
+  push:
+    branches:
+      - master
+      - gh-workflow-testing
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build Image
+        env:
+          RELEASE_VERSION: ${{ github.sha }}
+        run: ./scripts/build-release.sh
+
+      - name: Authenticate to DO Container Registry
+        run: |
+          mkdir -p $HOME/.docker
+          echo "${DOCKER_CONFIG}" > $HOME/.docker/config.json
+
+      - name: Push Image
+        env:
+          RELEASE_VERSION: ${{ github.sha }}
+        run: ./scripts/push-release.sh
+
+  # TODO: Run CI tests on the built container
+  #test:
+  #  needs: [build]
+  #  steps:
+  #    - name: Test
+  #      run: |
+  #        ./scripts/run-ci.sh
+
+  #    - name: Deploy
+  #      run: |
+  #        ./scripts/push-ci.sh
+
+  deploy-dev:
+    needs: [build]
+    #needs: [build, test]
+    runs-on: ubuntu-latest
+    steps:
+      #- name: Checkout 🛎️
+      #  uses: actions/checkout@v2
+
+      - name: Authenticate
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${KUBE_CONFIG}" > $HOME/.kube/config
+
+      - name: Deploy new version
+        env:
+          RELEASE_VERSION: ${{ github.sha }}
+        run: ./scripts/deploy-release.sh
