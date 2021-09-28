@@ -1,4 +1,11 @@
 ---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cloudflare-dns-updater-ns
+spec:
+
+---
 #apiVersion: batch/v1  # use this once on on k8s 1.21
 apiVersion: batch/v1beta1
 kind: CronJob
@@ -8,7 +15,7 @@ metadata:
   labels:
     app: cloudflare-dns-updater
 spec:
-  schedule: "*/1 * * * *"
+  schedule: "*/2 * * * *"
   jobTemplate:
     metadata:
       namespace: cloudflare-dns-updater-ns
