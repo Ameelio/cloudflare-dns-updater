@@ -18,6 +18,8 @@ jobs:
         run: ./scripts/build-release.sh
 
       - name: Authenticate to DO Container Registry
+        env:
+          DOCKER_CONFIG: ${{ secrets.DOCKER_CONFIG }}
         run: |
           mkdir -p $HOME/.docker
           echo "${DOCKER_CONFIG}" > $HOME/.docker/config.json
@@ -44,15 +46,33 @@ jobs:
     #needs: [build, test]
     runs-on: ubuntu-latest
     steps:
-      #- name: Checkout 🛎️
-      #  uses: actions/checkout@v2
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2
 
-      - name: Authenticate
+      - name: Print version numbers
         run: |
-          mkdir -p $HOME/.kube
-          echo "${KUBE_CONFIG}" > $HOME/.kube/config
+          docker --version || true
+          kubectl version || true
+
+      - name: Render Manifests
+        env:
+          RELEASE_VERSION: ${{ github.sha }}
+          ENV: dev
+        run: ./scripts/deploy-release.sh --save-manifest "${RELEASE_VERSION}-${ENV}-deployment.yaml"
+
+      - name: Archive Rendered Kubernetes Manifests
+        uses: actions/upload-artifact@v1
+        env:
+          RELEASE_VERSION: ${{ github.sha }}
+          ENV: dev
+        with:
+          name: "${{ env.RELEASE_VERSION }}-${{ env.ENV }}-deployment.yaml"
+          path: "${{ env.RELEASE_VERSION }}-${{ env.ENV }}-deployment.yaml"
 
       - name: Deploy new version
         env:
           RELEASE_VERSION: ${{ github.sha }}
-        run: ./scripts/deploy-release.sh
+          ENV: dev
+          K8S_SERVER: https://79aad049-3068-4ca9-a029-e1587c7021fd.k8s.ondigitalocean.com:443
+          K8S_TOKEN: ${{ secrets.K8S_TOKEN_DEV }}
+        run: ./scripts/deploy-release.sh --apply-manifest "${RELEASE_VERSION}-${ENV}-deployment.yaml"

@@ -3,48 +3,48 @@
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: cloudflare-updater
-  namespace: cloudflare-updater-ns
+  name: cloudflare-dns-updater
+  namespace: cloudflare-dns-updater-ns
   labels:
-    app: cloudflare-updater
+    app: cloudflare-dns-updater
 spec:
   schedule: "*/1 * * * *"
   jobTemplate:
     metadata:
-      namespace: cloudflare-updater-ns
+      namespace: cloudflare-dns-updater-ns
       labels:
-        app: cloudflare-updater
+        app: cloudflare-dns-updater
     spec:
       backoffLimit: 1
       activeDeadlineSeconds: 180
       template:
         metadata:
-          namespace: cloudflare-updater-ns
+          namespace: cloudflare-dns-updater-ns
           labels:
-            app: cloudflare-updater
+            app: cloudflare-dns-updater
         spec:
-          serviceAccountName: cloudflare-updater-sa
+          serviceAccountName: cloudflare-dns-updater-sa
           imagePullSecrets:
             - name: ameelio-registry
           containers:
-          - name: cloudflare-updater
-            image: registry.digitalocean.com/ameelio-registry/cloudflare-updater-prod:latest
+          - name: cloudflare-dns-updater
+            image: registry.digitalocean.com/ameelio-registry/cloudflare-dns-updater:${RELEASE_VERSION}
             imagePullPolicy: Always
             envFrom:
               - configMapRef:
-                  name: cloudflare-updater-config
+                  name: cloudflare-dns-updater-config
               - secretRef:
-                  name: cloudflare-updater-secrets
+                  name: cloudflare-dns-updater-secrets
           restartPolicy: Never
 
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: cloudflare-updater-config
-  namespace: cloudflare-updater-ns
+  name: cloudflare-dns-updater-config
+  namespace: cloudflare-dns-updater-ns
   labels:
-    app: cloudflare-updater
+    app: cloudflare-dns-updater
 data:
   HOSTNAME: 'cvh-prod'
   DOMAIN: 'ameelio.org'
