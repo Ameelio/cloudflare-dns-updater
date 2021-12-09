@@ -391,15 +391,15 @@ wait_for_deploy_complete ()
 apply_and_wait_deployment_manifest ()
 {
   if apply_deploy_manifest; then
-    log "Apply of deploy manifest succeeded!  Waiting ${SLEEP_SECONDS_AFTER_APPLY} seconds before checking status..."
-    sleep "${SLEEP_SECONDS_AFTER_APPLY}"
+    #log "Apply of deploy manifest succeeded!  Waiting ${SLEEP_SECONDS_AFTER_APPLY} seconds before checking status..."
+    #sleep "${SLEEP_SECONDS_AFTER_APPLY}"
 
-    if wait_for_deploy_complete; then
+    #if wait_for_deploy_complete; then
       log "Deployment completed successfully!"
       notify_deploy_complete
-    else
-      notify_failure_and_die "Deployment did NOT complete successfully.  exit status was '$?'.  Be sure to check the logs above and verify the current state of the application in ${ENV}"
-    fi
+    #else
+      #notify_failure_and_die "Deployment did NOT complete successfully.  exit status was '$?'.  Be sure to check the logs above and verify the current state of the application in ${ENV}"
+    #fi
   else
     notify_failure_and_die "Apply of deploy manifest FAILED!  Check logs above"
   fi
