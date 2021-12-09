@@ -6,3 +6,4 @@ fi
 
 docker push "registry.digitalocean.com/ameelio-registry/cloudflare-dns-updater:latest"
 docker push "registry.digitalocean.com/ameelio-registry/cloudflare-dns-updater:${RELEASE_VERSION}"
+

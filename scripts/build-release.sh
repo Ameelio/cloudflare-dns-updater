@@ -8,6 +8,8 @@ else
 fi
 
 docker build \
-  -t "registry.digitalocean.com/ameelio-registry/cloudflare-dns-updater:${RELEASE_VERSION}" \
-  -t "registry.digitalocean.com/ameelio-registry/cloudflare-dns-updater:latest" \
+  --file Dockerfile \
+  --tag "registry.digitalocean.com/ameelio-registry/cloudflare-dns-updater:${RELEASE_VERSION}" \
+  --tag "registry.digitalocean.com/ameelio-registry/cloudflare-dns-updater:latest" \
   .
+
