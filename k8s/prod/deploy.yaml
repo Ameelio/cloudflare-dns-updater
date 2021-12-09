@@ -4,14 +4,14 @@ apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
   name: cloudflare-dns-updater
-  namespace: cloudflare-dns-updater-ns
+  namespace: cloudflare-dns-updater-prod
   labels:
     app: cloudflare-dns-updater
 spec:
-  schedule: "*/1 * * * *"
+  schedule: "*/2 * * * *"
   jobTemplate:
     metadata:
-      namespace: cloudflare-dns-updater-ns
+      namespace: cloudflare-dns-updater-prod
       labels:
         app: cloudflare-dns-updater
     spec:
@@ -19,7 +19,7 @@ spec:
       activeDeadlineSeconds: 180
       template:
         metadata:
-          namespace: cloudflare-dns-updater-ns
+          namespace: cloudflare-dns-updater-prod
           labels:
             app: cloudflare-dns-updater
         spec:
@@ -42,7 +42,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: cloudflare-dns-updater-config
-  namespace: cloudflare-dns-updater-ns
+  namespace: cloudflare-dns-updater-prod
   labels:
     app: cloudflare-dns-updater
 data:
