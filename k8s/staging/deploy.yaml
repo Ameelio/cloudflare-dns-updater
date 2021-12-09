@@ -49,3 +49,44 @@ data:
   HOSTNAME: 'cvh-staging'
   DOMAIN: 'ameelio.org'
   ZONE_ID: 'c82786df7abd35eb6773c67960fba8d3'
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cloudflare-dns-updater-sa
+  namespace: cloudflare-dns-updater-staging
+automountServiceAccountToken: true
+secrets:
+imagePullSecrets:
+  - name: ameelio-registry
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cloudflare-dns-updater-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cloudflare-dns-updater-rb
+  namespace: cloudflare-dns-updater-staging
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cloudflare-dns-updater-role
+subjects:
+- kind: ServiceAccount
+  name: cloudflare-dns-updater-sa
+  namespace: cloudflare-dns-updater-staging
