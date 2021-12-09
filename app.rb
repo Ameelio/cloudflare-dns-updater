@@ -18,8 +18,13 @@ def info(msg)
 end
 
 def get_nodes
+  # In k8s, the ca cert is mounted here:
+  # /run/secrets/kubernetes.io/serviceaccount/ca.crt
+
+  # In dev, ca cert verification can be disabled
   ctx = OpenSSL::SSL::SSLContext.new
   ctx.verify_mode = OpenSSL::SSL::VERIFY_NONE
+  #ctx.ca_file = '/run/secrets/kubernetes.io/serviceaccount/ca.crt'
 
   resp = HTTP
     .auth("Bearer #{k8s_token}")
