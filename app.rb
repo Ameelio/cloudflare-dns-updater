@@ -150,12 +150,6 @@ def main(args)
     remove_a_record(ip: a_record) unless node_ips.include?(a_record)
   end
 
-  #debug "Inserting temp thing"
-  #create_a_record(ip: "192.0.2.1")
-
-  #debug "Removing temp thing"
-  #remove_a_record(ip: "192.0.2.1")
-
   info("Finished Cloudflare updater cycle")
 end
 
