@@ -132,6 +132,12 @@ def cf_auth_key = ENV['CF_AUTH_KEY']
 def main(args)
   info("Starting Cloudflare updater cycle")
 
+  info("- Start time: #{`date`}")
+  info("- Hostname: #{hostname}")
+  info("- Domain: #{domain}")
+  info("- Full Hostname: #{full_hostname}")
+  info("- Zone ID hostname: #{zone_id}")
+
   # Get the IP addresses for all the nodes in our cluster
   node_ips = get_node_ips
   info("Successfully Retrieved node_ips: #{node_ips}")
