@@ -46,9 +46,9 @@ metadata:
   labels:
     app: cloudflare-dns-updater
 data:
-  HOSTNAME: 'cvh-prod'
-  DOMAIN: 'ameelio.org'
-  ZONE_ID: 'c82786df7abd35eb6773c67960fba8d3'
+  HOSTNAME: '${HOSTNAME}'
+  DOMAIN: '${DOMAIN}'
+  ZONE_ID: '${ZONE_ID}'
 
 ---
 apiVersion: v1

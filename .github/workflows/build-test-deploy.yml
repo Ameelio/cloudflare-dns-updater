@@ -49,6 +49,9 @@ jobs:
       ENV: staging
       K8S_SERVER: https://79aad049-3068-4ca9-a029-e1587c7021fd.k8s.ondigitalocean.com:443
       SLACK_CHANNEL: '#connect-bots'
+      HOSTNAME: 'cvh-staging'
+      DOMAIN: 'ameelio.org'
+      ZONE_ID: 'c82786df7abd35eb6773c67960fba8d3'
 
     steps:
       - name: Checkout
@@ -83,6 +86,9 @@ jobs:
       ENV: prod
       K8S_SERVER: https://82f2cfa5-c499-43ff-832a-fe256fe4cbff.k8s.ondigitalocean.com
       SLACK_CHANNEL: '#infa-info'
+      HOSTNAME: 'cvh-prod'
+      DOMAIN: 'ameelio.org'
+      ZONE_ID: 'c82786df7abd35eb6773c67960fba8d3'
 
     steps:
       - name: Checkout
