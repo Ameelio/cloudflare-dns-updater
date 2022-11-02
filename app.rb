@@ -17,6 +17,14 @@ def info(msg)
   puts "[INFO]: #{msg}"
 end
 
+def warning(msg)
+  puts "[WARNING]: #{msg}"
+end
+
+def error(msg)
+  puts "[ERROR]: #{msg}"
+end
+
 def get_nodes
   # In k8s, the ca cert is mounted here:
   # /run/secrets/kubernetes.io/serviceaccount/ca.crt
@@ -50,7 +58,19 @@ def get_a_records
     .get("https://api.cloudflare.com/client/v4/zones/#{zone_id}/dns_records?name=#{full_hostname}&type=A")
     .body
 
-  JSON.parse(resp)
+  js = JSON.parse(resp)
+
+  if js["success"] == false
+    error("Cloudflare API call failed.  Cloudflare returned:")
+    error(JSON.pretty_unparse(js))
+
+    if js["errors"][0]["code"] == 10000
+      error("Cloudflare Authentication failed.  Double check the CF_TOKEN value")
+      exit 1
+    end
+  end
+
+  js
 end
 
 def relevant_a_records
@@ -136,7 +156,7 @@ def main(args)
   info("- Hostname: #{hostname}")
   info("- Domain: #{domain}")
   info("- Full Hostname: #{full_hostname}")
-  info("- Zone ID hostname: #{zone_id}")
+  info("- Zone ID: #{zone_id}")
 
   # Get the IP addresses for all the nodes in our cluster
   node_ips = get_node_ips

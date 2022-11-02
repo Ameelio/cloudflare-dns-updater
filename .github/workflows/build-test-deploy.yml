@@ -54,6 +54,9 @@ jobs:
       HOSTNAME: 'cvh-staging'
       DOMAIN: 'ameelio.org'
       ZONE_ID: 'c82786df7abd35eb6773c67960fba8d3'
+      # Switch to these settings once staging is on ameelio.xyZ instead of ameelio.org
+      #DOMAIN: 'ameelio.org'
+      #ZONE_ID: '16c266b9ad2cc7affc86783eb0fa74fd'
 
     steps:
       - name: Checkout
@@ -130,8 +133,8 @@ jobs:
       SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
       FACILITY: MCC
       HOSTNAME: 'cvh-mcc'
-      DOMAIN: 'ameelio.xyz'
-      ZONE_ID: '16c266b9ad2cc7affc86783eb0fa74fd'
+      DOMAIN: 'ameelio.org'
+      ZONE_ID: 'c82786df7abd35eb6773c67960fba8d3'
 
     steps:
       - name: Checkout
