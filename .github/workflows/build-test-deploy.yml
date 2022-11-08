@@ -43,20 +43,17 @@ jobs:
       - name: Test
         run: ./scripts/run-ci.sh
 
-  deploy-staging:
+  deploy-dev:
     needs: [build, test]
     runs-on: buildjet-2vcpu-ubuntu-2004
     #if: ${{ endsWith(github.ref, 'main') || endsWith(github.ref, '') }}
     env:
-      ENV: staging
+      ENV: dev
       K8S_SERVER: https://79aad049-3068-4ca9-a029-e1587c7021fd.k8s.ondigitalocean.com:443
       SLACK_CHANNEL: '#connect-bots'
-      HOSTNAME: 'cvh-staging'
-      DOMAIN: 'ameelio.org'
-      ZONE_ID: 'c82786df7abd35eb6773c67960fba8d3'
-      # Switch to these settings once staging is on ameelio.xyZ instead of ameelio.org
-      #DOMAIN: 'ameelio.org'
-      #ZONE_ID: '16c266b9ad2cc7affc86783eb0fa74fd'
+      HOSTNAME: 'cvh-dev'
+      DOMAIN: 'ameelio.xyz'
+      ZONE_ID: '16c266b9ad2cc7affc86783eb0fa74fd'
 
     steps:
       - name: Checkout
@@ -80,6 +77,46 @@ jobs:
       - name: Deploy new version
         env:
           K8S_TOKEN: ${{ secrets.K8S_TOKEN_DEV }}
+          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+        run: ./scripts/deploy-release.sh --apply-deploy --manifest-dir "manifests-${RELEASE_VERSION}-${ENV}" --debug
+
+  deploy-staging:
+    needs: [build, test]
+    runs-on: buildjet-2vcpu-ubuntu-2004
+    #if: ${{ endsWith(github.ref, 'main') || endsWith(github.ref, '') }}
+    env:
+      ENV: staging
+      K8S_SERVER: ${{ secrets.K8S_ENDPOINT_STAGING }}
+      K8S_TOKEN: ${{ secrets.K8S_TOKEN_STAGING }}
+      K8S_CA_CERT: ${{ secrets.K8S_CA_CERT_STAGING }}
+      SLACK_CHANNEL: '#connect-bots'
+      SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+      HOSTNAME: 'cvh-staging'
+      DOMAIN: 'ameelio.xyz'
+      ZONE_ID: '16c266b9ad2cc7affc86783eb0fa74fd'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Render Manifests
+        run: ./scripts/deploy-release.sh --save-deploy --manifest-dir "manifests-${RELEASE_VERSION}-${ENV}" --debug
+
+      - name: Archive Rendered Kubernetes Manifests
+        uses: actions/upload-artifact@v1
+        with:
+          name: "manifests-${{ env.RELEASE_VERSION }}-${{ env.ENV }}"
+          path: "manifests-${{ env.RELEASE_VERSION }}-${{ env.ENV }}"
+
+      #- name: Run migrations
+      #  env:
+      #    K8S_TOKEN: ${{ secrets.K8S_TOKEN_STAGING }}
+      #    SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+      #  run: ./scripts/deploy-release.sh --apply-migration --manifest-dir "manifests-${RELEASE_VERSION}-${ENV}" --debug
+
+      - name: Deploy new version
+        env:
+          K8S_TOKEN: ${{ secrets.K8S_TOKEN_STAGING }}
           SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
         run: ./scripts/deploy-release.sh --apply-deploy --manifest-dir "manifests-${RELEASE_VERSION}-${ENV}" --debug
 
