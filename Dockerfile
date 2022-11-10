@@ -22,6 +22,7 @@ RUN dnf module enable ruby:3.0 --assumeyes \
     ruby-devel \
     gcc-c++ \
     make \
+    redhat-rpm-config \
  && dnf clean all \
  && rm -rf /var/cache/dnf /var/cache/yum
 
