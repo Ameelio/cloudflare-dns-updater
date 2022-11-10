@@ -13,7 +13,8 @@ env:
 
 jobs:
   build:
-    runs-on: buildjet-2vcpu-ubuntu-2004
+    # runs-on: buildjet-2vcpu-ubuntu-2004
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -34,7 +35,8 @@ jobs:
 
   test:
     needs: [build]
-    runs-on: buildjet-2vcpu-ubuntu-2004
+    # runs-on: buildjet-2vcpu-ubuntu-2004
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -83,7 +85,8 @@ jobs:
 
   deploy-staging:
     needs: [build, test]
-    runs-on: buildjet-2vcpu-ubuntu-2004
+    # runs-on: buildjet-2vcpu-ubuntu-2004
+    runs-on: ubuntu-latest
     #if: ${{ endsWith(github.ref, 'main') || endsWith(github.ref, '') }}
     env:
       ENV: staging
@@ -123,7 +126,8 @@ jobs:
 
   deploy-prod:
     needs: [build, test, deploy-staging]
-    runs-on: buildjet-2vcpu-ubuntu-2004
+    # runs-on: buildjet-2vcpu-ubuntu-2004
+    runs-on: ubuntu-latest
     if: ${{ startsWith(github.ref, 'refs/tags/prod-') }}
     env:
       ENV: prod
@@ -160,7 +164,8 @@ jobs:
 
   deploy-mcc:
     needs: [build, test, deploy-staging]
-    runs-on: buildjet-2vcpu-ubuntu-2004
+    # runs-on: buildjet-2vcpu-ubuntu-2004
+    runs-on: ubuntu-latest
     if: ${{ startsWith(github.ref, 'refs/tags/prod-') }}
     env:
       ENV: prod
