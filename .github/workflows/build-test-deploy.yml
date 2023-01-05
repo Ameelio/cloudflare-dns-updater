@@ -94,8 +94,12 @@ jobs:
     env:
       ENV: prod
       K8S_SERVER: https://82f2cfa5-c499-43ff-832a-fe256fe4cbff.k8s.ondigitalocean.com
+      K8S_SERVER: ${{ secrets.K8S_ENDPOINT_PROD }}
+      K8S_TOKEN: ${{ secrets.K8S_TOKEN_PROD }}
+      K8S_CA_CERT: ${{ secrets.K8S_CA_CERT_PROD }}
+      SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
       SLACK_CHANNEL: '#infa-info'
-      HOSTNAME: 'cvh-prod'
+      HOSTNAME: 'cvh-prod-new'
       DOMAIN: 'ameelio.org'
       ZONE_ID: 'c82786df7abd35eb6773c67960fba8d3'
 
@@ -119,9 +123,6 @@ jobs:
       #  run: ./scripts/deploy-release.sh --apply-migration --manifest-dir "manifests-${RELEASE_VERSION}-${ENV}" --debug
 
       - name: Deploy new version
-        env:
-          K8S_TOKEN: ${{ secrets.K8S_TOKEN_PROD }}
-          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
         run: ./scripts/deploy-release.sh --apply-deploy --manifest-dir "manifests-${RELEASE_VERSION}-${ENV}" --debug
 
   deploy-mcc:
