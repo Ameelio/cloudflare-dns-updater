@@ -98,7 +98,7 @@ jobs:
       K8S_CA_CERT: ${{ secrets.K8S_CA_CERT_PROD }}
       SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
       SLACK_CHANNEL: '#infa-info'
-      HOSTNAME: 'cvh-prod-new'
+      HOSTNAME: 'cvh-prod'
       DOMAIN: 'ameelio.org'
       ZONE_ID: 'c82786df7abd35eb6773c67960fba8d3'
 
