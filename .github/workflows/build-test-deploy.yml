@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Build Image
         run: ./scripts/build-release.sh
@@ -40,7 +40,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Test
         run: ./scripts/run-ci.sh
@@ -63,7 +63,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Render Manifests
         run: ./scripts/deploy-release.sh --save-deploy --manifest-dir "manifests-${RELEASE_VERSION}-${ENV}" --debug
@@ -104,7 +104,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Render Manifests
         run: ./scripts/deploy-release.sh --save-deploy --manifest-dir "manifests-${RELEASE_VERSION}-${ENV}" --debug
@@ -143,7 +143,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Render Manifests
         run: ./scripts/deploy-release.sh --save-deploy --manifest-dir "manifests-${RELEASE_VERSION}-${ENV}" --debug
