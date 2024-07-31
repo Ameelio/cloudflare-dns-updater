@@ -41,6 +41,8 @@ def get_nodes
     .get("https://kubernetes.default.svc/api/v1/nodes", ssl_context: ctx)
     .body
 
+  debug("Retrieved nodes:  #{resp}")
+
   JSON.parse(resp)
 end
 
