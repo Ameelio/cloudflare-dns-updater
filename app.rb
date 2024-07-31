@@ -91,8 +91,8 @@ def create_a_record(ip:)
       type: "A",
       name: hostname,
       content: ip,
-      #ttl: 1,
-      ttl: 60,
+      ttl: 1,
+      #ttl: 60,
       proxied: false
     })
     .body
