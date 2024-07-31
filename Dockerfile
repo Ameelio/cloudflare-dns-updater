@@ -29,7 +29,6 @@ RUN dnf module enable ruby:3.3 --assumeyes \
 # Install EPEL and configure dnf, install updates, common packages, Ruby and clean up dnf's cache
 RUN dnf install --assumeyes https://dl.fedoraproject.org/pub/epel/epel-release-latest-$(rpm -E %rhel).noarch.rpm \
  && dnf install --assumeyes dnf-plugins-core \
- && dnf config-manager --set-enabled powertools \
  && dnf update --assumeyes \
  && dnf install --assumeyes \
     ca-certificates \
