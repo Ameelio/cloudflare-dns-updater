@@ -30,7 +30,7 @@ RUN dnf module enable ruby:3.3 --assumeyes \
 RUN dnf install --assumeyes https://dl.fedoraproject.org/pub/epel/epel-release-latest-$(rpm -E %rhel).noarch.rpm \
  && dnf install --assumeyes dnf-plugins-core \
  && dnf update --assumeyes \
- && dnf install --assumeyes \
+ && dnf install --assumeyes --allowerasing \
     ca-certificates \
     curl \
     wget \
