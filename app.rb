@@ -47,9 +47,16 @@ def get_nodes
 end
 
 def get_node_ips
-  get_nodes()["items"].map do |item|
-    item['status']['addresses'].select { |a| a['type'] == 'ExternalIP' }.map { |a| a['address'] }
-  end.flatten
+  # Get list of all nodes from the k8s API, then filter out only the ones that are part of the main pool,
+  # and extract the ExternalIP of each node
+  get_nodes()['items']
+    .select { |item| item['metadata']['labels']['ameelio.org/pool'] == 'main' }
+    .map { |item|
+        item['status']['addresses']
+          .select { |a| a['type'] == 'ExternalIP' }
+          .map { |a| a['address'] }
+      }
+    .flatten
 end
 
 def get_a_records
