@@ -182,8 +182,6 @@ def main(args)
 
   node_ips.each do |node_ip|
     # If there's not an A record for this IP already, add it
-    create_a_record(ip: node_ip) unless cf_a_records.include?(node_ip)
-
     unless cf_a_records.include?(node_ip)
       res = create_a_record(ip: node_ip)
 
