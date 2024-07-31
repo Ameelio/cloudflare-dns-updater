@@ -91,12 +91,15 @@ def create_a_record(ip:)
       type: "A",
       name: hostname,
       content: ip,
-      ttl: 1,
+      #ttl: 1,
+      ttl: 60,
       proxied: false
     })
     .body
 
   info("Creation result:  #{result}")
+
+  result
 end
 
 def remove_a_record(ip:)
@@ -166,9 +169,26 @@ def main(args)
   cf_a_records = relevant_a_records
   info("Successfully Retrieved relevant A records from Cloudflare: #{cf_a_records}")
 
+  errors = []
+
   node_ips.each do |node_ip|
     # If there's not an A record for this IP already, add it
     create_a_record(ip: node_ip) unless cf_a_records.include?(node_ip)
+
+    unless cf_a_records.include?(node_ip)
+      res = create_a_record(ip: node_ip)
+
+      unless res.include?('"success":true')
+        err_msg = "Failed to create A record for IP #{node_ip}.  Cloudflare returned:  #{res}"
+        error(err_msg)
+        errors << err_msg
+      end
+    end
+  end
+
+  if errors.any?
+    error("Errors occurred during Cloudflare update cycle.  Exiting with failure status.")
+    exit 1
   end
 
   cf_a_records.each do |a_record|
