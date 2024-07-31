@@ -91,8 +91,7 @@ def create_a_record(ip:)
       type: "A",
       name: hostname,
       content: ip,
-      ttl: 1,
-      #ttl: 60,
+      ttl: 360,
       proxied: false
     })
     .body
@@ -181,7 +180,7 @@ def main(args)
       unless res.include?('"success":true')
         err_msg = "Failed to create A record for IP #{node_ip}.  Cloudflare returned:  #{res}"
         error(err_msg)
-        errors << err_msg
+        errors.push(err_msg)
       end
     end
   end
