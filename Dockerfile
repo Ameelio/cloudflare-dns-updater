@@ -16,7 +16,7 @@ RUN dnf install --assumeyes \
  && echo "LANG=en_US.UTF-8" > /etc/locale.conf
 
 # Installs ruby module and sets version to 3.0
-RUN dnf module enable ruby:3.0 --assumeyes \
+RUN dnf module enable ruby:3.3 --assumeyes \
  && dnf install --assumeyes \
     ruby \
     ruby-devel \
