@@ -178,7 +178,7 @@ def main(args)
   cf_a_records = relevant_a_records
   info("Successfully Retrieved relevant A records from Cloudflare: #{cf_a_records}")
 
-  errors = []
+  a_record_creation_errors = []
 
   node_ips.each do |node_ip|
     # If there's not an A record for this IP already, add it
@@ -187,15 +187,16 @@ def main(args)
     unless cf_a_records.include?(node_ip)
       res = create_a_record(ip: node_ip)
 
-      unless res.include?('"success":true')
+      # Check that res hash contains "success":true
+      unless res["success"] == true
         err_msg = "Failed to create A record for IP #{node_ip}.  Cloudflare returned:  #{res}"
         error(err_msg)
-        errors.push(err_msg)
+        a_record_creation_errors.push(err_msg)
       end
     end
   end
 
-  if errors.any?
+  if a_record_creation_errors.any?
     error("Errors occurred during Cloudflare update cycle.  Exiting with failure status.")
     exit 1
   end
