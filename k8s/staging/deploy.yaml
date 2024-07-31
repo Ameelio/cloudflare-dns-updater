@@ -48,6 +48,7 @@ data:
   HOSTNAME: '${HOSTNAME}'
   DOMAIN: '${DOMAIN}'
   ZONE_ID: '${ZONE_ID}'
+  DEBUG_OUTPUT: 'Yes'
 
 ---
 apiVersion: v1
