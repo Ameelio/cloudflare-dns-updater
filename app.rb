@@ -176,7 +176,7 @@ def main(args)
 
   # Get all A records from Cloudflare
   cf_a_records = relevant_a_records
-  info("Successfully Retrieved relevant A records from Cloudflare: #{cf_a_records}")
+  info("Successfully retrieved relevant A records from Cloudflare: #{cf_a_records}")
 
   a_record_creation_errors = []
 
