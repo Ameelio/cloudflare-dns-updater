@@ -1,4 +1,4 @@
-FROM almalinux:9.4
+FROM almalinux:10.1
 
 ENV USER_HOME=/home/docker
 ENV LANG en_US.UTF-8
@@ -15,9 +15,8 @@ RUN dnf install --assumeyes \
  && localedef --force --inputfile=en_US --charmap=UTF-8 en_US.UTF-8 \
  && echo "LANG=en_US.UTF-8" > /etc/locale.conf
 
-# Installs ruby module and sets version to 3.0
-RUN dnf module enable ruby:3.3 --assumeyes \
- && dnf install --assumeyes \
+# Install Ruby 3.3 (the default version in the AlmaLinux 10 AppStream)
+RUN dnf install --assumeyes \
     ruby \
     ruby-devel \
     gcc-c++ \
