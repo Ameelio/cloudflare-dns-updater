@@ -46,7 +46,8 @@ COPY Gemfile Gemfile.lock /app/
 WORKDIR /app
 USER root
 RUN gem install bundler
-RUN bundle install
+RUN bundle config set --local force_ruby_platform true \
+ && bundle install
 
 COPY . /app/
 
