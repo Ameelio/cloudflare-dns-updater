@@ -2,8 +2,16 @@
 
 # PUT zones/:zone_identifier/dns_records/:identifier
 
-require 'http'
+require 'net/http'
+require 'uri'
+require 'openssl'
 require 'json'
+
+REQUEST_CLASS = {
+  get:    Net::HTTP::Get,
+  post:   Net::HTTP::Post,
+  delete: Net::HTTP::Delete,
+}.freeze
 
 def debug? = ENV['DEBUG_OUTPUT'] =~ /[Yy]/
 
@@ -25,21 +33,30 @@ def error(msg)
   puts "[ERROR]: #{msg}"
 end
 
+def http_request(method, url, bearer:, body: nil, verify_ssl: true)
+  uri = URI(url)
+  req = REQUEST_CLASS.fetch(method).new(uri)
+  req['Authorization'] = "Bearer #{bearer}"
+  req['Accept']        = 'application/json'
+  req['Content-Type']  = 'application/json'
+  req.body = JSON.generate(body) if body
+
+  Net::HTTP.start(
+    uri.host, uri.port,
+    use_ssl: uri.scheme == 'https',
+    verify_mode: verify_ssl ? OpenSSL::SSL::VERIFY_PEER : OpenSSL::SSL::VERIFY_NONE
+  ) { |h| h.request(req).body }
+end
+
 def get_nodes
-  # In k8s, the ca cert is mounted here:
-  # /run/secrets/kubernetes.io/serviceaccount/ca.crt
-
-  # In dev, ca cert verification can be disabled
-  ctx = OpenSSL::SSL::SSLContext.new
-  ctx.verify_mode = OpenSSL::SSL::VERIFY_NONE
-  #ctx.ca_file = '/run/secrets/kubernetes.io/serviceaccount/ca.crt'
-
-  resp = HTTP
-    .auth("Bearer #{k8s_token}")
-    .headers(accept: 'application/json')
-    .headers('content-type': 'application/json')
-    .get("https://kubernetes.default.svc/api/v1/nodes", ssl_context: ctx)
-    .body
+  # In k8s, the ca cert is mounted at /run/secrets/kubernetes.io/serviceaccount/ca.crt;
+  # cert verification is disabled here for parity with prior behavior.
+  resp = http_request(
+    :get,
+    "https://kubernetes.default.svc/api/v1/nodes",
+    bearer: k8s_token,
+    verify_ssl: false,
+  )
 
   # This object is very large, so comment out for now
   # debug("Retrieved nodes:  #{resp}")
@@ -61,12 +78,11 @@ def get_node_ips
 end
 
 def get_a_records
-  resp = HTTP
-    .auth("Bearer #{cf_token}")
-    .headers(accept: 'application/json')
-    .headers('content-type': 'application/json')
-    .get("https://api.cloudflare.com/client/v4/zones/#{zone_id}/dns_records?name=#{full_hostname}&type=A")
-    .body
+  resp = http_request(
+    :get,
+    "https://api.cloudflare.com/client/v4/zones/#{zone_id}/dns_records?name=#{full_hostname}&type=A",
+    bearer: cf_token,
+  )
 
   js = JSON.parse(resp)
 
@@ -93,18 +109,18 @@ def create_a_record(ip:)
   # POST zones/:zone_identifier/dns_records
   info "Creating A record for IP #{ip}"
 
-  result = HTTP
-    .auth("Bearer #{cf_token}")
-    .headers(accept: 'application/json')
-    .headers('content-type': 'application/json')
-    .post("https://api.cloudflare.com/client/v4/zones/#{zone_id}/dns_records", json: {
+  result = http_request(
+    :post,
+    "https://api.cloudflare.com/client/v4/zones/#{zone_id}/dns_records",
+    bearer: cf_token,
+    body: {
       type: "A",
       name: hostname,
       content: ip,
       ttl: 360,
       proxied: false
-    })
-    .body
+    },
+  )
 
   info("Creation result:  #{result}")
 
@@ -118,12 +134,11 @@ def remove_a_record(ip:)
 
   # First get the record's ID
   # TODO:  Limit search to cvh-staging.ameelio.org
-  resp = HTTP
-    .auth("Bearer #{cf_token}")
-    .headers(accept: 'application/json')
-    .headers('content-type': 'application/json')
-    .get("https://api.cloudflare.com/client/v4/zones/#{zone_id}/dns_records?type=A&match=all&content=#{ip}&name=#{full_hostname}")
-    .body
+  resp = http_request(
+    :get,
+    "https://api.cloudflare.com/client/v4/zones/#{zone_id}/dns_records?type=A&match=all&content=#{ip}&name=#{full_hostname}",
+    bearer: cf_token,
+  )
 
   debug "Parsing ID for A record for IP #{ip}"
 
@@ -135,12 +150,11 @@ def remove_a_record(ip:)
   debug "Parsed ID for A record for IP #{ip}.  ID is '#{id}'"
 
   # DELETE zones/:zone_identifier/dns_records/:identifier
-  result = HTTP
-    .auth("Bearer #{cf_token}")
-    .headers(accept: 'application/json')
-    .headers('content-type': 'application/json')
-    .delete("https://api.cloudflare.com/client/v4/zones/#{zone_id}/dns_records/#{id}")
-    .body
+  result = http_request(
+    :delete,
+    "https://api.cloudflare.com/client/v4/zones/#{zone_id}/dns_records/#{id}",
+    bearer: cf_token,
+  )
 
   info("Removal result:  #{result}")
 end

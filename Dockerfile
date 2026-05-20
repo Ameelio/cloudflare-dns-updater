@@ -15,13 +15,10 @@ RUN dnf install --assumeyes \
  && localedef --force --inputfile=en_US --charmap=UTF-8 en_US.UTF-8 \
  && echo "LANG=en_US.UTF-8" > /etc/locale.conf
 
-# Install Ruby 3.3 (the default version in the AlmaLinux 10 AppStream)
+# Install Ruby 3.3 (the default version in the AlmaLinux 10 AppStream).
+# The app uses only stdlib (net/http, json, openssl), so no build toolchain is needed.
 RUN dnf install --assumeyes \
     ruby \
-    ruby-devel \
-    gcc-c++ \
-    make \
-    redhat-rpm-config \
  && dnf clean all \
  && rm -rf /var/cache/dnf /var/cache/yum
 
@@ -41,13 +38,8 @@ RUN dnf install --assumeyes https://dl.fedoraproject.org/pub/epel/epel-release-l
  && rm -rf /var/cache/dnf /var/cache/yum
 
 
-COPY Gemfile Gemfile.lock /app/
-
 WORKDIR /app
 USER root
-RUN gem install bundler
-RUN bundle config set --local force_ruby_platform true \
- && bundle install
 
 COPY . /app/
 
