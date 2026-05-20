@@ -65,10 +65,10 @@ def get_nodes
 end
 
 def get_node_ips
-  # Get list of all nodes from the k8s API, then filter out only the ones that are part of the main pool,
+  # Get list of all nodes from the k8s API, then filter out only the ones that are part of the main or infra pools,
   # and extract the ExternalIP of each node
   get_nodes()['items']
-    .select { |item| item['metadata']['labels']['ameelio.org/pool'] == 'main' }
+    .select { |item| ['main', 'infra'].include?(item['metadata']['labels']['ameelio.org/pool']) }
     .map { |item|
         item['status']['addresses']
           .select { |a| a['type'] == 'ExternalIP' }
