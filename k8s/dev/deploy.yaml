@@ -23,7 +23,7 @@ spec:
         app: cloudflare-dns-updater
     spec:
       backoffLimit: 3
-      activeDeadlineSeconds: 180
+      activeDeadlineSeconds: 300
       template:
         metadata:
           namespace: cloudflare-dns-updater-ns
